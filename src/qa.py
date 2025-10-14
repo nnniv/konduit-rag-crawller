@@ -4,16 +4,25 @@ import logging
 import time
 from typing import Any, Dict, List, Tuple
 
-from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain_community.chat_models import ChatOllama
+try:
+    from langchain_ollama import OllamaEmbeddings, ChatOllama
+except ImportError:
+    from langchain_community.embeddings import OllamaEmbeddings 
+    from langchain_community.chat_models import ChatOllama 
+
+try:
+    from langchain_chroma import Chroma 
+except ImportError:
+    from langchain_community.vectorstores import Chroma 
 from langchain_core.messages import HumanMessage, SystemMessage
+import os
 
 LOG = logging.getLogger("qa")
 
 
 def chroma_retrieve(query: str, embedding_model: str, top_k: int = 5, collection: str = "default", persist_dir: str = "data/chroma") -> List[Tuple[Dict[str, Any], float]]:
-    embeddings = OllamaEmbeddings(model=embedding_model, base_url="http://127.0.0.1:11434")
+    base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+    embeddings = OllamaEmbeddings(model=embedding_model, base_url=base_url)
     vs = Chroma(collection_name=collection, embedding_function=embeddings, persist_directory=persist_dir)
     docs_scores = vs.similarity_search_with_score(query, k=top_k)
     results: List[Tuple[Dict[str, Any], float]] = []
@@ -63,7 +72,8 @@ def ask_question(question: str, top_k: int = 5, embedding_model: str = "embeddin
         "Write the best possible answer using only the context above. Include inline citations [n] after the statements you derive."
     )
 
-    llm = ChatOllama(model=generation_model, base_url="http://127.0.0.1:11434", temperature=0.1)
+    base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+    llm = ChatOllama(model=generation_model, base_url=base_url, temperature=0.1)
     t2 = time.monotonic()
     msg = llm.invoke([SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)])
     t3 = time.monotonic()

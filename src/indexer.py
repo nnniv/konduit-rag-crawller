@@ -10,6 +10,7 @@ from typing import Iterable, List, Tuple, Dict, Any
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
+import os
 
 LOG = logging.getLogger("indexer")
 
@@ -19,6 +20,16 @@ class Chunk:
     url: str
     chunk_index: int
     text: str
+
+try:
+    from langchain_ollama import OllamaEmbeddings  # new modular package
+except ImportError:  # fallback
+    from langchain_community.embeddings import OllamaEmbeddings  # type: ignore
+
+try:
+    from langchain_chroma import Chroma  # new modular package
+except ImportError:  # fallback
+    from langchain_community.vectorstores import Chroma  # type: ignore
 
 
 def ensure_dirs():
@@ -84,20 +95,20 @@ def index_into_chroma_latest(chunk_size: int, chunk_overlap: int, embedding_mode
         return 0, ["No text chunks produced from latest crawl"]
 
     try:
-        embeddings = OllamaEmbeddings(model=embedding_model, base_url="http://127.0.0.1:11434")
+        base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+        embeddings = OllamaEmbeddings(model=embedding_model, base_url=base_url)
     except Exception as e:
         return 0, [f"Failed to initialize embeddings for model '{embedding_model}': {e}"]
 
     try:
         vs = Chroma(collection_name=collection, embedding_function=embeddings, persist_directory=persist_dir)
-        # Add in reasonable batches
         batch = 64
         total = 0
         for i in range(0, len(texts), batch):
             j = min(len(texts), i + batch)
             vs.add_texts(texts=texts[i:j], metadatas=metadatas[i:j])
             total += (j - i)
-        vs.persist()
+        # vs.persist()  # Deprecated call removed
         return total, []
     except Exception as e:
         LOG.exception("Chroma indexing failed")
