@@ -4,4 +4,16 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "beautifulsoup4>=4.14.2",
+    "fastapi[standard]>=0.119.0",
+    "pydantic>=2.12.1",
+    "readability-lxml>=0.8.4.1",
+    "requests>=2.32.5",
+    "tldextract>=5.3.0",
+]
+
+[project.optional-dependencies]
+server = [
+    "uvicorn[standard]>=0.22.0",
+]
