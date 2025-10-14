@@ -32,6 +32,29 @@ This project implements a Retrieval-Augmented Generation (RAG) system that, star
 │   └── qa.py              # Question-Answering logic
 └── uv.lock
 ```
+## Getting Started
+
+### Prerequisites
+
+- Docker and Docker Compose installed.
+
+### Build and Run
+
+Build the Docker image and start the services:
+
+```bash
+docker-compose up --build
+```
+
+This will initialize the FastAPI server, accessible on port `3400`.
+
+### API Usage
+
+- `/crawl` (POST): Initiate crawling from a start URL.
+- `/index` (POST): Create or update the vector index with crawled content.
+- `/ask` (POST): Submit questions to retrieve answers grounded in crawled data, with citations to source URLs.
+
+Sample requests and responses are documented in the [`examples/EXAMPLES.md`](https://github.com/nnniv/konduit-rag-crawller/blob/main/examples/EXAMPLES.md)
 
 ## Models Used
 
@@ -74,27 +97,4 @@ The system is designed to operate efficiently on a typical modern development ma
 
 This setup was used for development and testing, providing a good balance for local deployment and experimentation with models and data.
 
-## Getting Started
 
-### Prerequisites
-
-- Docker and Docker Compose installed.
-- Follow the build and run instructions below.
-
-### Build and Run
-
-Build the Docker image and start the services:
-
-```bash
-docker-compose up --build
-```
-
-This will initialize the FastAPI server, accessible on port `3400`.
-
-### API Usage
-
-- `/crawl` (POST): Initiate crawling from a start URL.
-- `/index` (POST): Create or update the vector index with crawled content.
-- `/ask` (POST): Submit questions to retrieve answers grounded in crawled data, with citations to source URLs.
-
-Sample requests and responses are documented in the [`examples/EXAMPLES.md`](https://github.com/nnniv/konduit-rag-crawller/blob/main/examples/EXAMPLES.md)
