@@ -54,7 +54,7 @@ This will initialize the FastAPI server, accessible on port `3400`.
 - `/index` (POST): Create or update the vector index with crawled content.
 - `/ask` (POST): Submit questions to retrieve answers grounded in crawled data, with citations to source URLs.
 
-Sample requests and responses are documented in the [`examples/EXAMPLES.md`](https://github.com/nnniv/konduit-rag-crawller/blob/main/examples/EXAMPLES.md)
+Sample requests and responses are documented in the [`examples/EXAMPLES.md`](https://github.com/nnniv/konduit-rag-crawller/blob/main/examples/EXAMPLES.md).
 
 ## Models Used
 
