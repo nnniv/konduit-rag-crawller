@@ -1,18 +1,14 @@
-Here is the updated README with the detailed models section included:
-
----
-
-# RAG Crawl-Index-QA Assessment
+# RAG Crawller
 
 This project implements a Retrieval-Augmented Generation (RAG) system that, starting from a given website URL, crawls all accessible pages within the domain, indexes their textual content, and provides an API to answer questions based strictly on the crawled data with citations to original source URLs. The goal is to demonstrate practical skills in web crawling, text indexing, retrieval, grounded QA, and engineering clarity.
 
-## Feature
+## Features
 
 - Polite, domain-limited web crawler respecting `robots.txt` to fetch HTML content (up to a configurable page limit).
 - Content extraction with boilerplate removal and text cleaning.
 - Text chunking and embedding with open-source embedding models for vector similarity search.
 - Vector index storage using Chroma for efficient retrieval.
-- FastAPI HTTP API exposig endpoints to crawl, index, and ask questions with citations and timing info.
+- FastAPI HTTP API exposing endpoints to crawl, index, and ask questions with citations and timing info.
 - Robust grounding: answers are provided only if supported by retrieved context with explicit refusals otherwise.
 - Logging and basic observability of retrieval and generation latencies.
 
@@ -33,37 +29,40 @@ This project implements a Retrieval-Augmented Generation (RAG) system that, star
 │   │   └── app.py         # API
 │   ├── crawler.py         # Polite web crawler implementation
 │   ├── indexer.py         # Text chunking, embedding, and vector index management
-│   └── qa.py              # Question-Answering logic using retrieval from vector index
+│   └── qa.py              # Question-Answering logic
 └── uv.lock
 ```
 
 ## Models Used
 
-This project leverages open-source embedding and language models to implement the core RAG pipeline, ensuring cost-effective and transparent operation:
+This project employs the following key models and frameworks for the RAG pipeline:
 
-### Embedding Model
+- **Embedding Model:** Uses the `embeddingsgemma` model via the `OllamaEmbeddings` interface from the `langchaincommunity` package. This model generates dense vector embeddings for textual chunks extracted during crawling, which are critical for semantic search during question answering.
 
-- **OllamaEmbeddings**: The embedding model used to convert textual chunks into dense vector representations is provided by OllamaEmbeddings from the `langchaincommunity` library.
-- The embedding model converts cleaned and chunked crawl content into vectors that are stored and indexed in the Chroma vector store.
-- This vector representation enables high-quality semantic similarity search during question answering.
+- **Question Answering Model:** Utilizes the `gemma3latest` chat model through `ChatOllama`. This LLM generates answers based on retrieved context chunks, enforcing strict grounding by only responding with information supported by the indexed content, or declining otherwise.
 
-### Question Answering / Generation Model
+- **Vector Store:** The Chroma open-source vector database stores embeddings for efficient similarity search.
 
-- **ChatOllama (gemma3latest)**: For generating answers, the project uses an Ollama-based chat model, specifically the "gemma3latest" model, called via the `ChatOllama` wrapper.
-- The question answering module retrieves the most relevant chunks (top-K) from the vector index based on semantic similarity of embeddings.
-- It builds a prompt containing retrieved context passages and enforces grounded responses by instructing the model to only answer from the explicit context or refuse with "I don't know" if insufficient information is found.
-- The model operates asynchronously over HTTP with a configurable base URL for the Ollama API server, enabling flexible deployment scenarios.
+- **API Framework:** The system exposes its functionality via a **FastAPI** server, providing RESTful endpoints for crawling, indexing, and querying. FastAPI supports asynchronous processing and automatic API documentation, contributing to faster development and responsive interfaces.
 
-### Vector Store
+## Pros and Cons of This Implementation
 
-- **Chroma**: A locally persisted, open-source vector database is used for storing the embeddings. It provides efficient similarity search functionality integral to retrieval in RAG.
+### Pros
 
-### Design Rationale
+- Open-source, self-hosted models (Ollama gemma family) avoid reliance on expensive external LLM services, reducing operational costs.
+- Strict grounding in answers minimizes hallucinations and improves reliability.
+- Modular design enables easy swaps or upgrades of embedding and generation models.
+- FastAPI offers modern, asynchronous API support with automatic docs and high performance.
+- Chroma vector store allows quick semantic retrieval with a lightweight local deployment.
+- Polite crawler respects robots.txt and supports crawl constraints for ethical crawling.
 
-- Using Ollama models supports open ecosystem usage without depending on costly cloud APIs.
-- Embedding and generation models can be independently swapped or upgraded.
-- Enforcement of strict grounding in the prompt is critical to maintain the reliability of answers.
-- Coupling retrieval with generation models follows modern best practices in building RAG pipelines.
+### Cons
+
+- Limited to single-domain crawling with a set page limit, limiting scale for very large or multi-site crawls.
+- Embedded models may have lower accuracy or larger latency compared to proprietary cloud LLMs.
+- QA relies on retrieved content quality; if crawl misses key info, answers may be incomplete.
+- Local hosting of models requires sufficient compute resources (CPU/GPU) which may not scale for heavy usage.
+- Lack of user interface; interaction limited to API or CLI clients.
 
 ## System Specifications
 
@@ -90,7 +89,7 @@ Build the Docker image and start the services:
 docker-compose up --build
 ```
 
-This will initialize the FastAPI server, accessible on port 8000.
+This will initialize the FastAPI server, accessible on port `3400`.
 
 ### API Usage
 
@@ -98,4 +97,4 @@ This will initialize the FastAPI server, accessible on port 8000.
 - `/index` (POST): Create or update the vector index with crawled content.
 - `/ask` (POST): Submit questions to retrieve answers grounded in crawled data, with citations to source URLs.
 
-Sample requests and responses are documented in the examples/EXAMPLES.md.
+Sample requests and responses are documented in the `examples/EXAMPLES.md`
