@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import argparse
-import json
 import logging
 import queue
 import time
@@ -41,11 +39,9 @@ class PoliteCrawler:
         self.session.headers.update({"User-Agent": self.user_agent})
 
         self.visited: Set[str] = set()
-        # queue stores tuples (url, depth)
         self.to_visit = queue.Queue()
         self.to_visit.put((start_url, 0))
 
-        # stats
         self.skipped_count = 0
 
         self.start_reg_domain = self._registrable_domain(start_url)
@@ -123,7 +119,6 @@ class PoliteCrawler:
                 self.skipped_count += 1
                 continue
 
-            # Politeness delay
             elapsed = time.time() - last_fetch_time
             if elapsed < self.delay:
                 time.sleep(self.delay - elapsed)
@@ -171,28 +166,3 @@ class PoliteCrawler:
                     self.to_visit.put((clean, depth + 1))
 
         return results
-
-
-def main(argv=None):
-    parser = argparse.ArgumentParser(description="Polite crawler that extracts main content")
-    parser.add_argument("--start-url", required=True)
-    parser.add_argument("--max-pages", type=int, default=40)
-    parser.add_argument("--delay", type=float, default=1.0, help="seconds between requests")
-    parser.add_argument("--output", default="crawl_output.jsonl")
-    parser.add_argument("--verbose", action="store_true")
-    args = parser.parse_args(argv)
-
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-
-    crawler = PoliteCrawler(args.start_url, max_pages=args.max_pages, delay=args.delay)
-    results = crawler.crawl()
-
-    LOG.info("Fetched %d pages", len(results))
-    with open(args.output, "w", encoding="utf-8") as fh:
-        for p in results:
-            json.dump({"url": p.url, "title": p.title, "text": p.text, "fetched_at": p.fetched_at}, fh, ensure_ascii=False)
-            fh.write("\n")
-
-
-if __name__ == "__main__":
-    main()
