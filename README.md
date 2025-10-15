@@ -1,4 +1,4 @@
-# RAG Crawller
+# RAG Crawler
 
 This project implements a Retrieval-Augmented Generation (RAG) system that, starting from a given website URL, crawls all accessible pages within the domain, indexes their textual content, and provides an API to answer questions based strictly on the crawled data with citations to original source URLs.
 
